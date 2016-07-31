@@ -1,5 +1,14 @@
 # CSC462PlaysPokemon
 Twitch Plays Pokemon - Distributed Systems Version
 
+# To do
+See issues tab
+
 # Nodes
-Master: 54.200.56.171
+## Master
+IP: 54.200.67.158
+RTMP Server: rtmp://54.200.67.158/live (Stream key: "test")
+User: ubuntu 
+Pass: csc462
+
+
