@@ -6,9 +6,9 @@ See issues tab
 
 # Nodes
 ## Master
-IP: 54.200.67.158
-RTMP Server: rtmp://54.200.67.158/live (Stream key: "test")
-User: ubuntu 
-Pass: csc462
+- __IP__: 54.213.238.143
+- __RTMP Server__: rtmp://54.213.238.143/live (Stream key: "test")
+- __User__: ubuntu 
+- __Pass__: csc462
 
 
