@@ -1,0 +1,52 @@
+<html>
+
+<head>
+<title>CSC462 Plays Pokemon</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-8">
+			<!-- <iframe src="//content.jwplatform.com/players/vqpCH41q-ujiHpGIs.html" width="500" height="400" frameborder="0" scrolling="auto" allowfullscreen></iframe> -->
+			<div style="background: #120012;height:400px;width:500px;">&nbsp;</div>
+		</div>
+		<div class="col-md-4 pull-right">
+			<div class="row" id="chat" style="overflow:auto;height:calc(100% - 300px);">
+				
+			</div>
+			<div class="row">
+				<div class="form-group">
+					<input type="text" class="form-control" name="move" id="move"/>
+				</div>		
+				<button type="button" class="btn btn-primary" onclick="javascript:sendMove();">Send</button>		
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	// Regularely read the chat for updates
+	$(document).ready(function(){
+		setInterval(function(){
+			getChat();
+		}, 500);
+	});
+
+	function getChat(){
+		$.get("chat.txt", function(data){
+			$("#chat").html("<p>"+data+"</p>");
+		});
+	}
+	
+	function sendMove(){
+		// Sends a move to the server and clears the text field
+		var userInput = $('#move').val();
+		$.post( "addChatMessage.php", { move: userInput} );
+		$('#move').val('');
+	}
+</script>
+</body>
+</html>
