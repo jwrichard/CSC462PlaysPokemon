@@ -11,4 +11,7 @@ See issues tab
 - __User__: ubuntu 
 - __Pass__: csc462
 
+## Slave 1
+- __IP__: 54.201.255.6
+- __User__: ubuntu 
 

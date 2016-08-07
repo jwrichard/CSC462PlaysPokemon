@@ -8,21 +8,22 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
 		<div class="col-md-8">
-			<!-- <iframe src="//content.jwplatform.com/players/vqpCH41q-ujiHpGIs.html" width="500" height="400" frameborder="0" scrolling="auto" allowfullscreen></iframe> -->
-			<div style="background: #120012;height:400px;width:500px;">&nbsp;</div>
+			<div style="position:relative; padding-bottom:75%; overflow:hidden;"><iframe src="//content.jwplatform.com/players/vqpCH41q-ujiHpGIs.html" width="100%" height="100%" frameborder="0" scrolling="auto" allowfullscreen style="position:absolute;"></iframe></div>
 		</div>
 		<div class="col-md-4 pull-right">
-			<div class="row" id="chat" style="overflow:auto;height:calc(100% - 300px);">
+			<div class="row" id="chat" style="overflow-y:auto;overflow-x:hidden;height:calc(100% - 300px);">
 				
 			</div>
 			<div class="row">
-				<div class="form-group">
-					<input type="text" class="form-control" name="move" id="move"/>
-				</div>		
-				<button type="button" class="btn btn-primary" onclick="javascript:sendMove();">Send</button>		
+				<form class="form-inline" id="chatForm">
+					<div class="form-group" style="width:calc( 100% - 65px );">
+						<input type="text" class="form-control" name="move" id="move" style="width: 100%;"/>
+					</div>		
+					<button type="submit" class="btn btn-primary">Send</button>	
+				</form>
 			</div>
 		</div>
 	</div>
@@ -33,12 +34,21 @@
 		setInterval(function(){
 			getChat();
 		}, 500);
+		
+		// Add event handler for the form submission
+		$('#chatForm').submit(function(){
+			sendMove();
+			return false;
+		});
 	});
 
 	function getChat(){
 		$.get("chat.txt", function(data){
 			$("#chat").html("<p>"+data+"</p>");
 		});
+		$("#chat").animate({
+			scrollTop: $("#chat").get(0).scrollHeight
+		}, 300);
 	}
 	
 	function sendMove(){
