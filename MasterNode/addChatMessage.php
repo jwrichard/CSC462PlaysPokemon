@@ -18,7 +18,7 @@
 		}
 		fclose($file);
 		
-		$file = fopen("/home/ubuntu/chat.txt", "a") or die("Unable to open file!");
+		$file = fopen("/home/ubuntu/chat/chat.txt", "a") or die("Unable to open file!");
 		$str = htmlentities($_POST['move']).PHP_EOL;
 		if (flock($file, LOCK_EX)) { // do an exclusive lock
 			fwrite($file, $str);
