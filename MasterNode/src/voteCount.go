@@ -18,9 +18,10 @@ func Map(value string) *list.List {
 	counts := createMovesMap()
 
   // Count all our moves.
-	for _, wd := range fs {
-    if val, ok := counts[wd]; ok {
-      counts[wd] = val + 1
+	for _, line := range fs {
+		word := strings.ToLower(line)
+    if val, ok := counts[word]; ok {
+      counts[word] = val + 1
     }
 	}
 
