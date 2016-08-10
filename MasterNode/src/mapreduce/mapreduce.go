@@ -307,13 +307,23 @@ func (mr *MapReduce) Merge() {
 		}
 		file.Close()
 	}
-	var keys []string
-	for k := range kvs {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
 
-	file, err := os.Create("mrtmp." + mr.file)
+	// The default value for no votes.
+	maxKey := "noop"
+	maxValue := 0
+	for k, v := range kvs {
+		value, err := strconv.Atoi(v)
+		if err == nil {
+			if value > maxValue {
+				maxKey = k
+				maxValue = value
+			}
+		}
+	}
+
+	fmt.Println(maxKey)
+
+	/*file, err := os.Create("mrtmp." + mr.file)
 	if err != nil {
 		log.Fatal("Merge: create ", err)
 	}
@@ -321,8 +331,12 @@ func (mr *MapReduce) Merge() {
 	for _, k := range keys {
 		fmt.Fprintf(w, "%s: %s\n", k, kvs[k])
 	}
-	w.Flush()
-	file.Close()
+	fmt.Println("MR TEMP: ", mr.file)
+	for _, k := range keys {
+		fmt.Println(k, ": ", kvs[k])
+	}*/
+	//w.Flush()
+	//file.Close()
 }
 
 func RemoveFile(n string) {
