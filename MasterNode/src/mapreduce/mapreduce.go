@@ -323,20 +323,15 @@ func (mr *MapReduce) Merge() {
 
 	fmt.Println(maxKey)
 
-	/*file, err := os.Create("mrtmp." + mr.file)
+	file, err := os.Create("move.txt")
 	if err != nil {
 		log.Fatal("Merge: create ", err)
 	}
 	w := bufio.NewWriter(file)
-	for _, k := range keys {
-		fmt.Fprintf(w, "%s: %s\n", k, kvs[k])
-	}
-	fmt.Println("MR TEMP: ", mr.file)
-	for _, k := range keys {
-		fmt.Println(k, ": ", kvs[k])
-	}*/
-	//w.Flush()
-	//file.Close()
+	fmt.Fprintf(w, "%s\n", maxKey)
+
+	w.Flush()
+	file.Close()
 }
 
 func RemoveFile(n string) {
@@ -347,6 +342,7 @@ func RemoveFile(n string) {
 }
 
 func (mr *MapReduce) CleanupFiles() {
+	fmt.Println("Called.")
 	for i := 0; i < mr.nMap; i++ {
 		RemoveFile(MapName(mr.file, i))
 		for j := 0; j < mr.nReduce; j++ {
