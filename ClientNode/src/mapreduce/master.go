@@ -116,7 +116,6 @@ func (mr *MapReduce) launchTask(i int, args DoJobArgs, loc string, done chan str
 	reply := new(DoJobReply)
 	w := mr.Workers[loc]
 	fmt.Println("Assigned job ", i, " to ", loc)
-	fmt.Println("Making RPC call to ", w.address)
 	call(w.address, "Worker.DoJob", args, reply)
 	if !reply.OK {
 		fmt.Println("Failed task! Returning to queue, worker ", w.address, " task ", i)
@@ -198,9 +197,7 @@ func (mr *MapReduce) RunMaster() *list.List {
 	del := make(chan string)
 	updel := make(chan int)
 	go mr.manageWorkers(update, del, updel)
-	fmt.Println("@ Running map task")
 	mr.runTask(mr.nMap, mr.nReduce, update, updel, del, Map)
-	fmt.Println("@ Running reduce task")
 	mr.runTask(mr.nReduce, mr.nMap, update, updel, del, Reduce)
 	return mr.KillWorkers()
 }

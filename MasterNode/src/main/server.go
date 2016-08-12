@@ -1,41 +1,34 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"net"
-	"net/rpc"
+import "log"
+import "mapreduce"
+import "os"
+import "time"
+
+const (
+	SELF = "54.201.255.6:1337"
+	INPUT_FILE = "input.txt"
+	CHAT_FILE = "/home/ubuntu/chat/chat.txt"
+	SLEEP_TIME = 5
 )
 
-type Arith struct {
-	client *rpc.Client
-}
-
-type Args struct {
-	A, B int
-}
-
-func (t *Arith) Multiply(a, b int) int {
-	args := &Args{a, b}
-	var reply int
-	err := t.client.Call("Arith.Multiply", args, &reply)
-	if err != nil {
-		log.Fatal("arith error:", err)
-	}
-	return reply
+func doMapreduce() {
+	mr := mapreduce.MakeMapReduce(1, 1, INPUT_FILE, SELF)
+	// Wait for the MR to finish
+	<-mr.DoneChannel
 }
 
 func main() {
 
-	// Tries to connect to localhost:1234 (The port on which rpc server is listening)
-	conn, err := net.Dial("tcp", "54.201.255.6:1337")
-	if err != nil {
-		log.Fatal("Connecting:", err)
+	for {
+		doMapreduce()
+		// Reset the chat file for the next file
+		file, err := os.Create(CHAT_FILE)
+		if err != nil {
+			log.Fatal("Clear chat file: ", err)
+		}
+		file.Close()
+		time.Sleep(SLEEP_TIME * time.Second)	
 	}
 
-	// Create a struct, that mimics all methods provided by interface.
-	// It is not compulsory, we are doing it here, just to simulate a traditional method call.
-	arith := &Arith{client: rpc.NewClient(conn)}
-
-	fmt.Println(arith.Multiply(5, 6))
 }

@@ -6,7 +6,7 @@
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
-<body>
+<body style="background: #000; color: #fff;">
 
 <div class="container-fluid">
 	<div class="row">
@@ -25,6 +25,10 @@
 					<button type="submit" class="btn btn-primary">Send</button>	
 				</form>
 			</div>
+			<div class="row">
+				<p>Valid moves: A, B, Up, Down, Left, Right, Start, Select</p>
+				<h4 style="color: #eee;">The last move was: <span id="last" style="color: red; font-size:1.2em"></span></h4>
+			</div>
 		</div>
 	</div>
 </div>
@@ -34,6 +38,9 @@
 		setInterval(function(){
 			getChat();
 		}, 500);
+		setInterval(function(){
+			getLatestMove();	
+		}, 1000);
 		
 		// Add event handler for the form submission
 		$('#chatForm').submit(function(){
@@ -49,6 +56,12 @@
 		$("#chat").animate({
 			scrollTop: $("#chat").get(0).scrollHeight
 		}, 300);
+	}
+
+	function getLatestMove(){
+		$.get("move", function(data){
+			$('#last').html(data);
+		});
 	}
 	
 	function sendMove(){

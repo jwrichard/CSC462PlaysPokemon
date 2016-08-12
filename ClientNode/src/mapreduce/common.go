@@ -58,16 +58,16 @@ type RegisterReply struct {
 //
 func call(srv string, rpcname string,
      args interface{}, reply interface{}) bool {
+
+	fmt.Println("connecting to master at:, ", srv)
      c, errx := rpc.Dial("tcp", srv)
      if errx != nil {
      	return false
 	}
 	defer c.Close()
-
-	fmt.Println("Attmepting call: ", rpcname)
-	fmt.Println("To... ", srv)
+	fmt.Println("Making a call, ", rpcname)
 	err := c.Call(rpcname, args, reply)
-	fmt.Println("we back baby")
+	fmt.Println("Finished the call")
 	if err == nil {
 	   return true
   }

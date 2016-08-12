@@ -1,22 +1,13 @@
 package main
 
-import (
-	"mapreduce"
-	"container/list"
-	"strings"
-	"strconv"
-	"unicode"
-)
+import "os"
+import "fmt"
+import "mapreduce"
+import "container/list"
+import "strings"
+import "strconv"
+import "unicode"
 
-const (
-	MASTER =	"54.213.250.201:1337"
-	SELF =		"54.201.255.6:1337"
-	PORT =		":1337"
-)
-
-//
-//	The mapper
-//
 func Map(value string) *list.List {
 
 	fs := strings.FieldsFunc(value, func(r rune) bool {
@@ -66,9 +57,6 @@ func createMovesMap() map[string]int {
     return movesMap
 }
 
-//
-//	The reducer
-//
 func Reduce(key string, values *list.List) string {
 
 	count := 0
@@ -85,6 +73,24 @@ func Reduce(key string, values *list.List) string {
 
 }
 
+// Can be run in 3 ways:
+// 1) Sequential (e.g., go run wc.go master x.txt sequential)
+// 2) Master (e.g., go run wc.go master x.txt localhost:7777)
+// 3) Worker (e.g., go run wc.go worker localhost:7777 localhost:7778 &)
 func main() {
-	mapreduce.RunWorker(MASTER, SELF, PORT, Map, Reduce, 100)
+	fmt.Println("Welcome to my MapReduce!")
+
+	if len(os.Args) != 4 {
+		fmt.Printf("%s: see usage comments in file\n", os.Args[0])
+	} else if os.Args[1] == "master" {
+		if os.Args[3] == "sequential" {
+			mapreduce.RunSingle(5, 3, os.Args[2], Map, Reduce)
+		} else {
+			mr := mapreduce.MakeMapReduce(5, 3, os.Args[2], os.Args[3])
+			// Wait until MR is done
+			<-mr.DoneChannel
+		}
+	} else {
+		mapreduce.RunWorker(os.Args[2], os.Args[3], Map, Reduce, 100)
+	}
 }

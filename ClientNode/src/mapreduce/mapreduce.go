@@ -95,14 +95,14 @@ func MakeMapReduce(nmap int, nreduce int,
 }
 
 func (mr *MapReduce) Register(args *RegisterArgs, res *RegisterReply) error {
-	fmt.Println("Registering worker...")
+	fmt.Println("Registering worker: ", args.Worker)
 	DPrintf("Register: worker %s\n", args.Worker)
 	mr.registerChannel <- args.Worker
 	res.OK = true
 	return nil
 }
 
-func (mr *MapReduce) Shutdown() error {
+func (mr *MapReduce) Shutdown(args *ShutdownArgs, res *ShutdownReply) error {
 	DPrintf("Shutdown: registration server\n")
 	mr.alive = false
 	mr.l.Close() // causes the Accept to fail
@@ -113,9 +113,9 @@ func (mr *MapReduce) StartRegistrationServer() {
 	rpcs := rpc.NewServer()
 	rpcs.Register(mr)
 	os.Remove(mr.MasterAddress) // only needed for "unix"
-	l, e := net.Listen("tcp", ":1337")
+	l, e := net.Listen("tcp", mr.MasterAddress)
 	if e != nil {
-		log.Fatal("RegstrationServer: ", mr.MasterAddress, " error: ", e)
+		log.Fatal("RegstrationServer", mr.MasterAddress, " error: ", e)
 	}
 	mr.l = l
 
@@ -146,7 +146,7 @@ func MapName(fileName string, MapJob int) string {
 // Split bytes of input file into nMap splits, but split only on white space
 func (mr *MapReduce) Split(fileName string) {
 	fmt.Printf("Split %s\n", fileName)
-	infile, err := os.Open("/home/ubuntu/efs/" + fileName)
+	infile, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal("Split: ", err)
 	}
@@ -159,7 +159,7 @@ func (mr *MapReduce) Split(fileName string) {
 	nchunk := size / int64(mr.nMap)
 	nchunk += 1
 
-	outfile, err := os.Create("/home/ubuntu/efs/" + MapName(fileName, 0))
+	outfile, err := os.Create(MapName(fileName, 0))
 	if err != nil {
 		log.Fatal("Split: ", err)
 	}
@@ -172,7 +172,7 @@ func (mr *MapReduce) Split(fileName string) {
 		if int64(i) > nchunk*int64(m) {
 			writer.Flush()
 			outfile.Close()
-			outfile, err = os.Create("/home/ubuntu/efs/" + MapName(fileName, m))
+			outfile, err = os.Create(MapName(fileName, m))
 			writer = bufio.NewWriter(outfile)
 			m += 1
 		}
@@ -197,43 +197,43 @@ func hash(s string) uint32 {
 // Read split for job, call Map for that split, and create nreduce
 // partitions.
 func DoMap(JobNumber int, fileName string,
-	nreduce int, Map func(string) *list.List) {
-	name := MapName(fileName, JobNumber)
-	file, err := os.Open(name)
-	if err != nil {
-		log.Fatal("DoMap: ", err)
-	}
-	fi, err := file.Stat()
-	if err != nil {
-		log.Fatal("DoMap: ", err)
-	}
-	size := fi.Size()
-	fmt.Printf("DoMap: read split %s %d\n", name, size)
-	b := make([]byte, size)
-	_, err = file.Read(b)
-	if err != nil {
-		log.Fatal("DoMap: ", err)
-	}
-	file.Close()
-	res := Map(string(b))
-	// XXX a bit inefficient. could open r files and run over list once
-	for r := 0; r < nreduce; r++ {
-		file, err = os.Create(ReduceName(fileName, JobNumber, r))
-		if err != nil {
-			log.Fatal("DoMap: create ", err)
-		}
-		enc := json.NewEncoder(file)
-		for e := res.Front(); e != nil; e = e.Next() {
-			kv := e.Value.(KeyValue)
-			if hash(kv.Key)%uint32(nreduce) == uint32(r) {
-				err := enc.Encode(&kv)
-				if err != nil {
-					log.Fatal("DoMap: marshall ", err)
-				}
-			}
-		}
-		file.Close()
-	}
+    nreduce int, Map func(string) *list.List) {
+    name := MapName(fileName, JobNumber)
+    file, err := os.Open("/home/ubuntu/efs/" + name)
+    if err != nil {
+        log.Fatal("DoMap: ", err)
+    }
+    fi, err := file.Stat()
+    if err != nil {
+        log.Fatal("DoMap: ", err)
+    }
+    size := fi.Size()
+    fmt.Printf("DoMap: read split %s %d\n", name, size)
+    b := make([]byte, size)
+    _, err = file.Read(b)
+    if err != nil {
+        log.Fatal("DoMap: ", err)
+    }
+    file.Close()
+    res := Map(string(b))
+    // XXX a bit inefficient. could open r files and run over list once
+    for r := 0; r < nreduce; r++ {
+        file, err = os.Create("/home/ubuntu/efs/" + ReduceName(fileName, JobNumber, r))
+        if err != nil {
+            log.Fatal("DoMap: create ", err)
+        }
+        enc := json.NewEncoder(file)
+        for e := res.Front(); e != nil; e = e.Next() {
+            kv := e.Value.(KeyValue)
+            if hash(kv.Key)%uint32(nreduce) == uint32(r) {
+                err := enc.Encode(&kv)
+                if err != nil {
+                    log.Fatal("DoMap: marshall ", err)
+                }
+            }
+        }
+        file.Close()
+    }
 }
 
 func MergeName(fileName string, ReduceJob int) string {
@@ -248,7 +248,7 @@ func DoReduce(job int, fileName string, nmap int,
 	for i := 0; i < nmap; i++ {
 		name := ReduceName(fileName, i, job)
 		fmt.Printf("DoReduce: read %s\n", name)
-		file, err := os.Open(name)
+		file, err := os.Open("/home/ubuntu/efs/" + name)
 		if err != nil {
 			log.Fatal("DoReduce: ", err)
 		}
@@ -273,7 +273,7 @@ func DoReduce(job int, fileName string, nmap int,
 	}
 	sort.Strings(keys)
 	p := MergeName(fileName, job)
-	file, err := os.Create(p)
+	file, err := os.Create("/home/ubuntu/efs/" + p)
 	if err != nil {
 		log.Fatal("DoReduce: create ", err)
 	}
@@ -293,7 +293,7 @@ func (mr *MapReduce) Merge() {
 	for i := 0; i < mr.nReduce; i++ {
 		p := MergeName(mr.file, i)
 		fmt.Printf("Merge: read %s\n", p)
-		file, err := os.Open("/home/ubuntu/efs/" + p)
+		file, err := os.Open(p)
 		if err != nil {
 			log.Fatal("Merge: ", err)
 		}
@@ -336,7 +336,7 @@ func (mr *MapReduce) Merge() {
 }
 
 func RemoveFile(n string) {
-	err := os.Remove("/home/ubuntu/efs/" + n)
+	err := os.Remove(n)
 	if err != nil {
 		log.Fatal("CleanupFiles ", err)
 	}
@@ -356,21 +356,6 @@ func (mr *MapReduce) CleanupFiles() {
 	RemoveFile("mrtmp." + mr.file)
 }
 
-// Run jobs sequentially.
-func RunSingle(nMap int, nReduce int, file string,
-	Map func(string) *list.List,
-	Reduce func(string, *list.List) string) {
-	mr := InitMapReduce(nMap, nReduce, file, "")
-	mr.Split(mr.file)
-	for i := 0; i < nMap; i++ {
-		DoMap(i, mr.file, mr.nReduce, Map)
-	}
-	for i := 0; i < mr.nReduce; i++ {
-		DoReduce(i, mr.file, mr.nMap, Reduce)
-	}
-	mr.Merge()
-}
-
 func (mr *MapReduce) CleanupRegistration() {
 	args := &ShutdownArgs{}
 	var reply ShutdownReply
@@ -385,18 +370,10 @@ func (mr *MapReduce) CleanupRegistration() {
 func (mr *MapReduce) Run() {
 	fmt.Printf("Run mapreduce job %s %s\n", mr.MasterAddress, mr.file)
 
-	fmt.Println("Running split on input file")
 	mr.Split(mr.file)
-
-	fmt.Println("Running master")
 	mr.stats = mr.RunMaster()
-
-	fmt.Println("Running merge")
 	mr.Merge()
-
-	fmt.Println("Running cleanup registration")
 	mr.CleanupRegistration()
-	mr.Shutdown()
 
 	fmt.Printf("%s: MapReduce done\n", mr.MasterAddress)
 

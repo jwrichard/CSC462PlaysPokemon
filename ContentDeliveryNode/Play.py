@@ -31,7 +31,7 @@ def main():
     while True:
         move = getMoveFromServer()
         ms = 0x00;
-		if move == 'up':
+        if move == 'up':
             ms = 0x57
         if move == 'down':
             ms = 0x53
@@ -48,9 +48,9 @@ def main():
         if move == 'b':
             ms = 0x58
         if move != 0x00:
-			win32api.keybd_event(ms, 0)
-			time.sleep(0.05)
-			win32api.keybd_event(ms, 0 , 0x0002 , 0)
+            win32api.keybd_event(ms, 0)
+            time.sleep(0.05)
+            win32api.keybd_event(ms, 0 , 0x0002 , 0)
         time.sleep(5)
 
 # Gets a random move for testing
@@ -59,7 +59,9 @@ def getMove():
 
 # Gets a random move from the server - TODO
 def getMoveFromServer():
-	return urllib2.urlopen("http://54.213.250.201/move").read() # Python 2.x
+    x = urllib2.urlopen("http://54.213.250.201/move").read()
+    print x.strip()
+    return x.strip() # Python 2.x
     # return urllib.request.urlopen("http://54.213.250.201/move").read() # Python 3.x
 
 if __name__ == '__main__':

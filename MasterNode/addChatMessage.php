@@ -4,8 +4,9 @@
 	} else {
 		// Generate a random color for the clients messages
 		$clientNum = ip2long($_SERVER['REMOTE_ADDR']);
-		$magicNumber = $clientNum%124871;
-		$rgbstring = 'rgb('. ($clientNum % 256) .','. (255-($clientNum % 256)) .','. ($magicNumber % 256) .')';
+		$clientNum2 = (int)strrev($clientNum.'');
+		$magicNumber = $clientNum*$clientNum2;
+		$rgbstring = 'rgb('. ($clientNum % 256) .','. ($clientNum2 % 256) .','. ($magicNumber % 256) .')';
 		$str = "<span style='color:$rgbstring;'>[".date("g:i:s")."]</span> ".htmlentities($_POST['move']).'<br>';
 		
 		
