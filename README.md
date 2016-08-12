@@ -9,6 +9,11 @@ Created twitch plays pokemon, but not hosted on twitch. Where does distributed w
 - Slaves return a total of each move entered into chat to be aggregated
 - Master sends the chosen move decided on by Map Reduce to the host, and the game executes the move
 
+# Project contributors
+- Justin Richard
+- Adam Kroon
+- Tyler Potter
+
 # Screenshot
 ![Alt text](example.jpg?raw=true "Sample gameplay")
 
