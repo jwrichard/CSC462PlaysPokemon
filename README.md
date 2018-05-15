@@ -23,15 +23,15 @@ Created twitch plays pokemon, but not hosted on twitch. Where does distributed w
 
 # Nodes
 ## Master
-- __IP__: 54.213.250.201
-- __RTMP Server__: rtmp://54.213.250.201/live (Stream key: "test")
+- __IP__: removed
+- __RTMP Server__: rtmp://removed/live (Stream key: "test")
 - __User__: ubuntu 
 
 ## Slave 1
-- __IP__: 54.201.255.6
+- __IP__: removed
 - __User__: ubuntu 
 
 ## Slave 2
-- __IP__: 54.208.103.21
+- __IP__: removed
 - __User__: ubuntu 
 
